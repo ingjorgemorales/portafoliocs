@@ -25,7 +25,7 @@ El modo demo solo funciona durante desarrollo, sin Supabase configurado y con `D
 - Migración relacional para configuración, secciones, categorías, proyectos, enlaces, medios, servicios, experiencia, formación, testimonios, FAQs, fuentes y contactos. Restricciones, índices y fechas de auditoría. Los detalles editoriales específicos usan JSONB validado; las relaciones y permisos están en tablas SQL.
 - Storage privado: validación de archivos y firma binaria, UUID, alt, uso, asociación y orden. Los archivos heredan la publicación del proyecto; despublicar revoca lectura posterior. Se transmiten mediante un endpoint sujeto a RLS y sin caché pública. Eliminación limitada a objetos sin referencias.
 - Formulario con React Hook Form y Zod en cliente/servidor, honeypot, tiempo mínimo, consentimiento, versión del aviso y límites atómicos en Postgres. Bandeja privada con estados pendiente/atendido.
-- OpenAI Responses exclusivamente en servidor, modelo por variable de entorno, contexto público leído con cliente anónimo, sin historial persistido, timeout, límites de entrada/salida y cuotas distribuidas. El panel gestiona tono, bienvenida, activación, FAQ y fuentes autorizadas. Las fuentes externas se incorporan mediante resumen editorial; no hay scraping ni RAG complejo.
+- Gemini exclusivamente en servidor, modelo por variable de entorno, contexto público leído con cliente anónimo, sin historial persistido por la app, timeout, límites de entrada/salida y cuotas distribuidas. El panel gestiona tono, bienvenida, activación, FAQ y fuentes autorizadas. Las fuentes externas se incorporan mediante resumen editorial; no hay scraping ni RAG complejo.
 - Renderizado dinámico y revalidación al guardar, sin despliegue para cambios de contenido. Metadata de proyectos y sitio, imagen social configurable, sitemap y robots que excluyen administración/API.
 - `.env.example`, guía de instalación y despliegue, pruebas y flujo de CI de GitHub.
 
@@ -35,7 +35,7 @@ Sigue [docs/CONFIGURACION.md](docs/CONFIGURACION.md) para:
 
 1. Crear o seleccionar **Supabase de desarrollo**, aplicar la migración y crear el primer administrador de forma segura.
 2. Completar URL, publishable key y service role en `.env.local`.
-3. Configurar `RATE_LIMIT_SECRET`, `OPENAI_API_KEY`, `OPENAI_MODEL` y límite diario.
+3. Configurar `RATE_LIMIT_SECRET`, `GEMINI_API_KEY`, `GEMINI_MODEL` y límite diario.
 4. Configurar Auth, recuperación, alternativa de Supabase local con Docker, GitHub, Vercel y dominio.
 
 No compartas claves secretas en chats ni commits. El aviso de privacidad y los canales de contacto deben completarse antes de habilitar el formulario. Las notificaciones por correo de nuevos contactos son una integración opcional no activada.
@@ -76,7 +76,7 @@ Se utiliza el patrón de Button de shadcn/ui (Radix Slot, CVA y utilidades), ada
 ## Pendientes externos reales
 
 - Conectar Supabase y comprobar login/recuperación, persistencia y Storage contra el servicio real.
-- Configurar OpenAI y verificar una respuesta real y los límites con el modelo elegido.
+- Configurar Gemini y verificar una respuesta real y los límites con el modelo elegido.
 - Sustituir marcadores por contenido profesional y aprobar el aviso de privacidad.
 - Autenticar GitHub CLI y elegir/crear el repositorio remoto para subir el código. Git está inicializado localmente; no se ha subido el repositorio.
 - Desplegar en Vercel y configurar dominio únicamente cuando se solicite. No se ha publicado en producción ni creado recursos de pago.

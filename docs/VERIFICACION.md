@@ -32,6 +32,6 @@ La anchura del contenido principal medida en DOM fue 437 px tanto en `clientWidt
 
 ## No verificado contra servicios externos
 
-Faltan credenciales de Supabase y OpenAI. Por tanto, no se afirma haber probado login/logout real, entrega de correo de recuperación, carga/descarga contra Storage real, guardado de contactos remotos, respuesta OpenAI real ni despliegue en Vercel. Las políticas se probaron con PGlite y un esquema mínimo de Auth/Storage; el flujo real debe completarse con [la lista manual](PRUEBAS-MANUALES.md).
+Faltan credenciales de Supabase y Gemini. Por tanto, no se afirma haber probado login/logout real, entrega de correo de recuperación, carga/descarga contra Storage real, guardado de contactos remotos, respuesta Gemini real ni despliegue en Vercel. Las políticas se probaron con PGlite y un esquema mínimo de Auth/Storage; el flujo real debe completarse con [la lista manual](PRUEBAS-MANUALES.md).
 
 GitHub CLI está instalado pero `gh auth status` indica que no hay sesión iniciada. No existe un remoto configurado para este trabajo y no se subió código a GitHub. No se crearon servicios remotos ni recursos de pago. Los servidores usados en la revisión son exclusivamente locales.

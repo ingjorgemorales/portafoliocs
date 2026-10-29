@@ -33,13 +33,13 @@ npx supabase status
 
 `db reset` destruye **solo la base local** del proyecto: úsalo únicamente para desarrollo sin datos que conservar. La migración versionada se ejecuta automáticamente. Copia las URL y claves locales que muestre `status` a `.env.local`. Crea el usuario y rol desde Studio local, igual que arriba. Auth local entrega correos al buzón de pruebas que muestra `supabase status`. No uses estas claves en producción. No se ha iniciado Docker ni creado un proyecto remoto automáticamente.
 
-## OpenAI
+## Gemini
 
-Configura `OPENAI_API_KEY` de un proyecto dedicado y `OPENAI_MODEL` con un identificador vigente, disponible en tu cuenta y compatible con Responses. La aplicación no fija un modelo por defecto.
+Configura `GEMINI_API_KEY` desde Google AI Studio y `GEMINI_MODEL` con el identificador de un modelo Gemini disponible para tu proyecto. La aplicación no fija un modelo por defecto; usa Gemini `generateContent` desde una ruta del servidor y mantiene la clave fuera del navegador.
 
 - `AI_DAILY_REQUEST_LIMIT` limita llamadas globales por día UTC; `0` apaga el consumo.
 - Máximo 8 consultas/hora por identificador de visitante, 1000 caracteres por pregunta, 24 000 caracteres de contexto y 650 tokens de salida por solicitud. Cada consulta es independiente; no se conserva historial entre peticiones.
-- Se reservan cuotas en Postgres antes de llamar al proveedor, incluso si luego falla. El límite diario, el contexto acotado y los tokens de salida acotan el gasto, pero no equivalen a un límite monetario exacto: calcula el presupuesto con los precios del modelo y configura alertas/límites en tu proyecto OpenAI.
+- Se reservan cuotas en Postgres antes de llamar al proveedor, incluso si luego falla. El límite diario, el contexto acotado y los tokens de salida acotan el gasto, pero no equivalen a un límite monetario exacto: revisa el uso y los límites disponibles en Google AI Studio para tu proyecto.
 - Sin reintentos automáticos, timeout de 22 segundos y `store:false`. No se guardan conversaciones en la base. Esto no sustituye las políticas de retención del proveedor.
 - Publica FAQs y fuentes autorizadas en Administración → Asistente IA. Las fuentes se usan por su resumen editorial; no se descargan URL externas ni se siguen enlaces.
 - Las consultas de contexto usan siempre un cliente anónimo, nunca el cliente con sesión ni `service_role`.
@@ -83,4 +83,4 @@ Notificaciones de contacto por correo: integración opcional todavía no activad
 - [Next.js: instalación](https://nextjs.org/docs/app/getting-started/installation)
 - [Supabase: clientes SSR](https://supabase.com/docs/guides/auth/server-side/creating-a-client?framework=nextjs)
 - [shadcn/ui: Next.js](https://ui.shadcn.com/docs/installation/next)
-- [OpenAI: Responses API](https://developers.openai.com/api/docs/guides/migrate-to-responses)
+- [Google AI for Developers: Gemini API](https://ai.google.dev/api/generate-content)

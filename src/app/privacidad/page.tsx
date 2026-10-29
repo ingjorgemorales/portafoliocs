@@ -13,7 +13,8 @@ export default async function Privacy() {
       </p>
       <h2>Asistente virtual</h2>
       <p>
-        Si decides utilizarlo, tu pregunta se envía al proveedor OpenAI para
+        Si decides utilizarlo, tu pregunta y el contexto público del portafolio
+        se envían a Google Gemini para
         generar una respuesta. Esta aplicación no conserva conversaciones
         completas. Evita incluir información sensible. Se registran contadores
         temporales con identificadores seudonimizados para prevenir abusos.
