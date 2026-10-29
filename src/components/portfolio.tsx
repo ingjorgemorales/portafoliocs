@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
+  Camera,
   ArrowDown,
   ArrowUpRight,
   Menu,
@@ -10,8 +11,10 @@ import {
   Plus,
   ArrowRight,
 } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
+import { useMotionEnabled } from "./motion-system";
 import type { ContentRecord, Media, Profile } from "@/lib/schema";
+const MotionLink = motion.create(Link);
 export function Header({
   name,
   visibleSections,
@@ -66,7 +69,6 @@ export function Header({
 export function Hero({
   profile,
   portrait,
-  demo,
   visibleSections,
 }: {
   profile: Profile;
@@ -74,11 +76,61 @@ export function Hero({
   demo: boolean;
   visibleSections: string[];
 }) {
-  const reduced = useReducedMotion();
+  const enabled = useMotionEnabled();
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const visualY = useTransform(scrollYProgress, [0, 1], [0, -65]);
   return (
-    <section className="hero">
+    <section className="hero" ref={heroRef}>
       <motion.div
-        initial={reduced ? false : { opacity: 0, y: 18 }}
+        className="hero-visual"
+        style={{ y: enabled ? visualY : 0 }}
+        initial={false}
+        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+        transition={{ duration: 1, delay: 0, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {portrait ? (
+          <Image
+            src={portrait.url!}
+            alt={portrait.alt || `Retrato de ${profile.name}`}
+            fill
+            priority
+            sizes="(max-width: 760px) 100vw, 55vw"
+            unoptimized
+          />
+        ) : (
+          <div
+            className="portrait-placeholder"
+            role="img"
+            aria-label="Espacio reservado para la fotografía de Leonela Garcia Padilla"
+          >
+            <span className="portrait-index">01 / LEONELA</span>
+            <div className="portrait-frame">
+              <Camera size={44} strokeWidth={1} aria-hidden="true" />
+              <strong>
+                Aquí va
+                <br />
+                su fotografía.
+              </strong>
+              <span>LEONELA GARCIA PADILLA</span>
+            </div>
+            <p>
+              Un retrato suyo, en primer plano.
+              <br />
+              La primera mirada de este portafolio.
+            </p>
+          </div>
+        )}
+        <div className="portrait-caption">
+          <span>{profile.name}</span>
+          <span>{portrait ? profile.specialty : "Fotografía pendiente"}</span>
+        </div>
+      </motion.div>
+      <motion.div
+        initial={enabled ? { opacity: 0, y: 18 } : false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="hero-copy"
@@ -87,12 +139,32 @@ export function Hero({
           <span className="dot" />
           {profile.specialty} · {profile.location}
         </div>
+        <motion.p
+          className="hero-name"
+          initial={enabled ? { opacity: 0, x: -20 } : false}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.12, duration: 0.65 }}
+        >
+          Soy {profile.name}
+        </motion.p>
         <h1>
           {profile.headline.split(". ").map((s, i) => (
-            <span key={i} className={i === 1 ? "italic-accent" : ""}>
+            <motion.span
+              key={i}
+              className={i === 1 ? "italic-accent" : ""}
+              initial={
+                enabled ? { opacity: 0, y: 38, filter: "blur(7px)" } : false
+              }
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{
+                duration: enabled ? 0.9 : 0,
+                delay: enabled ? 0.2 + i * 0.22 : 0,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
               {s}
               {i === 0 && profile.headline.includes(". ") ? "." : ""}{" "}
-            </span>
+            </motion.span>
           ))}
         </h1>
         <p>{profile.introduction}</p>
@@ -114,47 +186,6 @@ export function Hero({
           </a>
         )}
       </motion.div>
-      <div className="hero-visual">
-        {portrait ? (
-          <Image
-            src={portrait.url!}
-            alt={portrait.alt}
-            fill
-            priority
-            sizes="(max-width: 760px) 100vw, 45vw"
-            unoptimized
-          />
-        ) : (
-          <div className="editorial-art">
-            <span className="art-top">
-              EL ARTE DE
-              <br />
-              CONTAR HISTORIAS
-            </span>
-            <div className="art-circle" />
-            <div className="art-arch" />
-            <span className="art-serif">
-              Voces.
-              <br />
-              <i>Ideas.</i>
-              <br />
-              Conexiones.
-            </span>
-            <span className="art-bottom">
-              UNA MIRADA PROPIA — UN PROPÓSITO COMPARTIDO
-            </span>
-          </div>
-        )}
-        <div className="visual-note">
-          <span>01 / UNA MIRADA PROPIA</span>
-          <p>
-            {portrait
-              ? "Cada historia empieza con una forma de mirar."
-              : "Aquí irá tu fotografía. Por ahora, una composición editorial."}
-          </p>
-          {demo && <small>Diseño de demostración</small>}
-        </div>
-      </div>
     </section>
   );
 }
@@ -170,6 +201,7 @@ export function Projects({
   demo: boolean;
 }) {
   const [filter, setFilter] = useState("");
+  const enabled = useMotionEnabled();
   const filtered = filter
     ? projects.filter((p) => p.category_id === filter)
     : projects;
@@ -189,53 +221,75 @@ export function Projects({
           </button>
         ))}
       </div>
-      <div className="project-grid">
-        {filtered.map((p, i) => {
-          const cover = media.find(
-            (m) => m.project_id === p.id && m.purpose === "cover",
-          );
-          return (
-            <Link
-              href={`/proyectos/${p.slug}`}
-              className={`project-card ${p.featured && !filter ? "featured" : ""}`}
-              key={p.id}
-            >
-              <div className={`project-image art-${i % 3}`}>
-                {cover ? (
-                  <Image
-                    src={cover.url!}
-                    alt={cover.alt}
-                    fill
-                    unoptimized
-                    sizes="(max-width: 760px) 100vw, 55vw"
-                  />
-                ) : (
-                  <div className="project-art">
-                    <span>
-                      {demo ? "ESTUDIO DE DEMOSTRACIÓN" : "PROYECTO EDITORIAL"}
-                    </span>
-                    <strong>{p.title}</strong>
-                    <div className="poster-lines" />
-                    <small>COMUNICACIÓN / NARRATIVAS</small>
-                  </div>
-                )}
-                <span className="project-open">
-                  <ArrowUpRight size={22} />
-                </span>
-              </div>
-              <div className="project-meta">
-                <span>
-                  {categories.find((c) => c.id === p.category_id)?.title ||
-                    "Proyecto"}
-                </span>
-                <span>{p.data?.date || (demo ? "DEMO" : "")}</span>
-              </div>
-              <h3>{p.title}</h3>
-              <p>{p.summary}</p>
-            </Link>
-          );
-        })}
-      </div>
+      <motion.div layout={enabled} className="project-grid">
+        <AnimatePresence mode="popLayout">
+          {filtered.map((p) => {
+            const cover = media.find(
+              (m) => m.project_id === p.id && m.purpose === "cover",
+            );
+            return (
+              <MotionLink
+                href={`/proyectos/${p.slug}`}
+                className={`project-card ${p.featured && !filter ? "featured" : ""}`}
+                key={p.id}
+                layout={enabled}
+                initial={enabled ? { opacity: 0, y: 28, scale: 0.97 } : false}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                animate={!enabled ? { opacity: 1, y: 0, scale: 1 } : undefined}
+                viewport={{
+                  once: true,
+                  amount: 0.12,
+                  margin: "0px 0px -45px 0px",
+                }}
+                exit={enabled ? { opacity: 0, y: 12, scale: 0.96 } : undefined}
+                whileHover={enabled ? { y: -6 } : undefined}
+                transition={{
+                  duration: enabled ? 0.42 : 0,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                <div className={`project-image art-${p.sort_order % 6}`}>
+                  {cover ? (
+                    <Image
+                      src={cover.url!}
+                      alt={cover.alt}
+                      fill
+                      unoptimized
+                      sizes="(max-width: 760px) 100vw, 55vw"
+                    />
+                  ) : (
+                    <div className="project-art">
+                      <span>
+                        {demo
+                          ? "ESTUDIO DE DEMOSTRACIÓN"
+                          : "PROYECTO EDITORIAL"}
+                      </span>
+                      <strong>{p.title}</strong>
+                      <div className="poster-lines" />
+                      <span className="poster-number" aria-hidden="true">
+                        {String(p.sort_order + 1).padStart(2, "0")}
+                      </span>
+                      <small>COMUNICACIÓN / NARRATIVAS</small>
+                    </div>
+                  )}
+                  <span className="project-open">
+                    <ArrowUpRight size={22} />
+                  </span>
+                </div>
+                <div className="project-meta">
+                  <span>
+                    {categories.find((c) => c.id === p.category_id)?.title ||
+                      "Proyecto"}
+                  </span>
+                  <span>{p.data?.date || (demo ? "DEMO" : "")}</span>
+                </div>
+                <h3>{p.title}</h3>
+                <p>{p.summary}</p>
+              </MotionLink>
+            );
+          })}
+        </AnimatePresence>
+      </motion.div>
       {!filtered.length && (
         <p className="empty">No hay proyectos publicados en esta categoría.</p>
       )}
@@ -243,20 +297,61 @@ export function Projects({
   );
 }
 export function Services({ items }: { items: ContentRecord[] }) {
+  const [active, setActive] = useState<string | null>(null);
+  const enabled = useMotionEnabled();
   return (
     <div className="services-list">
       {items.map((s, i) => (
-        <details key={s.id}>
-          <summary>
-            <span className="service-number">0{i + 1}</span>
-            <h3>{s.title}</h3>
-            <Plus size={24} />
-          </summary>
-          <div className="service-content">
-            <p>{s.summary}</p>
-            {s.body && <p>{s.body.replace(/<[^>]*>/g, "")}</p>}
-          </div>
-        </details>
+        <motion.div
+          className="service-accordion"
+          key={s.id}
+          initial={enabled ? { opacity: 0, x: 24 } : false}
+          whileInView={{ opacity: 1, x: 0 }}
+          animate={!enabled ? { opacity: 1, x: 0 } : undefined}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{
+            delay: enabled ? i * 0.1 : 0,
+            duration: enabled ? 0.55 : 0,
+          }}
+        >
+          <h3>
+            <button
+              className="service-trigger"
+              aria-expanded={active === s.id}
+              aria-controls={`service-${s.id}`}
+              onClick={() => setActive(active === s.id ? null : s.id!)}
+            >
+              <span className="service-number">0{i + 1}</span>
+              <span className="service-title">{s.title}</span>
+              <motion.span
+                animate={{ rotate: active === s.id ? 45 : 0 }}
+                transition={{ duration: enabled ? 0.3 : 0 }}
+              >
+                <Plus size={24} />
+              </motion.span>
+            </button>
+          </h3>
+          <motion.div
+            id={`service-${s.id}`}
+            initial={false}
+            animate={{
+              height: active === s.id ? "auto" : 0,
+              opacity: active === s.id ? 1 : 0,
+            }}
+            transition={{
+              duration: enabled ? 0.38 : 0,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="service-reveal"
+            inert={active !== s.id}
+            aria-hidden={active !== s.id}
+          >
+            <div className="service-content">
+              <p>{s.summary}</p>
+              {s.body && <p>{s.body.replace(/<[^>]*>/g, "")}</p>}
+            </div>
+          </motion.div>
+        </motion.div>
       ))}
     </div>
   );

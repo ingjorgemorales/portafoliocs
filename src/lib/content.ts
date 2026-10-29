@@ -6,6 +6,7 @@ import {
   defaultSections,
   defaultSettings,
   demoRecords,
+  demoProfile,
 } from "./demo";
 import type {
   AssistantSettings,
@@ -39,7 +40,7 @@ export async function records(
 export async function configuration(db?: SupabaseClient) {
   if (!configured())
     return {
-      profile: defaultProfile,
+      profile: isDemo() ? demoProfile : defaultProfile,
       settings: defaultSettings,
       assistant: defaultAssistant,
       sections: defaultSections,
